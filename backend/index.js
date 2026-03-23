@@ -11,17 +11,21 @@ app.get("/", (req, res) => {
   res.send("Backend is running 🚀");
 });
 
-// GENERATE AD (FIXED)
+// GENERATE AD
 app.post("/generate-ad", (req, res) => {
   try {
     const { product, audience } = req.body;
 
-    const result = `🔥 Introducing ${product}! Perfect for ${audience}. Boost your business today 🚀`;
+    if (!product || !audience) {
+      return res.status(400).json({ error: "Missing data" });
+    }
+
+    const result = `🔥 Introducing ${product}! Perfect for ${audience}.`;
 
     res.json({ result });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Ad generation failed" });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -29,6 +33,10 @@ app.post("/generate-ad", (req, res) => {
 app.post("/analyze", (req, res) => {
   try {
     const { salesData } = req.body;
+
+    if (!salesData || salesData.length === 0) {
+      return res.status(400).json({ error: "No data" });
+    }
 
     const totalSales = salesData.reduce((sum, item) => sum + item.sales, 0);
 
@@ -43,28 +51,32 @@ app.post("/analyze", (req, res) => {
     res.json({ totalSales, bestProduct, worstProduct });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Analysis failed" });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
 // INSIGHTS
 app.post("/insights", (req, res) => {
   res.json({
-    insights:
-      "Focus on best-selling products and improve low-performing ones.",
+    insights: "Focus on top products and improve weak ones.",
   });
 });
 
-// CHAT (NO OLLAMA)
+// CHAT
 app.post("/chat", (req, res) => {
   try {
     const { message } = req.body;
 
+    if (!message) {
+      return res.status(400).json({ error: "No message" });
+    }
+
     res.json({
-      reply: `💡 Business Tip: Improve marketing, pricing, and customer experience.\n\nYou said: "${message}"`,
+      reply: `💡 Tip: Improve marketing & customer experience.\n\nYou asked: "${message}"`,
     });
   } catch (err) {
-    res.status(500).json({ error: "Chat failed" });
+    console.error(err);
+    res.status(500).json({ error: "Chat error" });
   }
 });
 
