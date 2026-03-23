@@ -4,12 +4,15 @@ import fetch from "node-fetch";
 
 const app = express();
 
-// ✅ FORCE CORS HEADERS (THIS FIXES EVERYTHING)
+/* =========================
+   ✅ FORCE CORS (FINAL FIX)
+========================= */
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
+  // handle preflight
   if (req.method === "OPTIONS") {
     return res.sendStatus(200);
   }
@@ -17,25 +20,21 @@ app.use((req, res, next) => {
   next();
 });
 
-// OPTIONAL (still fine to keep)
+// optional but fine
 app.use(cors());
 
 app.use(express.json());
 
-// ✅ HANDLE PREFLIGHT REQUESTS
-app.options("*", cors());
-
-// ✅ BODY PARSER
-app.use(express.json());
-
-
-// ✅ ROOT ROUTE
+/* =========================
+   ✅ ROOT
+========================= */
 app.get("/", (req, res) => {
   res.send("Backend is running 🚀");
 });
 
-
-// ✅ AD GENERATOR
+/* =========================
+   ✅ AD GENERATOR
+========================= */
 app.post("/generate-ad", (req, res) => {
   try {
     const { product, audience } = req.body;
@@ -54,8 +53,9 @@ app.post("/generate-ad", (req, res) => {
   }
 });
 
-
-// ✅ SALES ANALYSIS
+/* =========================
+   ✅ SALES ANALYSIS
+========================= */
 app.post("/analyze", (req, res) => {
   try {
     const { salesData } = req.body;
@@ -82,13 +82,14 @@ app.post("/analyze", (req, res) => {
   }
 });
 
-
-// ✅ INSIGHTS
+/* =========================
+   ✅ INSIGHTS
+========================= */
 app.post("/insights", (req, res) => {
   try {
     res.json({
       insights:
-        "Focus on top-performing products and improve low-performing ones using better marketing strategies."
+        "Focus on top-performing products and improve weaker ones using better marketing strategies."
     });
   } catch (err) {
     console.error("INSIGHTS ERROR:", err);
@@ -96,8 +97,9 @@ app.post("/insights", (req, res) => {
   }
 });
 
-
-// ✅ GROQ AI CHATBOT
+/* =========================
+   ✅ GROQ AI CHATBOT
+========================= */
 app.post("/chat", async (req, res) => {
   try {
     const { message } = req.body;
@@ -131,7 +133,7 @@ app.post("/chat", async (req, res) => {
 
     if (!data.choices) {
       console.error("GROQ ERROR:", data);
-      return res.status(500).json({ error: "AI response failed" });
+      return res.status(500).json({ error: "AI failed" });
     }
 
     const reply = data.choices[0].message.content;
@@ -144,8 +146,9 @@ app.post("/chat", async (req, res) => {
   }
 });
 
-
-// ✅ PORT (CRITICAL FOR RAILWAY)
+/* =========================
+   ✅ PORT (CRITICAL)
+========================= */
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
