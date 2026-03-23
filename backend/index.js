@@ -2,125 +2,75 @@ import express from "express";
 import cors from "cors";
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
+// ROOT
 app.get("/", (req, res) => {
-  res.send("SmartOps Backend Running 🚀");
+  res.send("Backend is running 🚀");
 });
 
-
-// ===============================
-// AD GENERATOR
-// ===============================
-app.post("/generate-ad", async (req, res) => {
-  const { product, audience } = req.body;
-
+// GENERATE AD (FIXED)
+app.post("/generate-ad", (req, res) => {
   try {
-    const response = await fetch("http://localhost:11434/api/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "llama3",
-        prompt: `Create a high converting ad for ${product} targeting ${audience}`,
-        stream: false,
-      }),
-    });
+    const { product, audience } = req.body;
 
-    const data = await response.json();
+    const result = `🔥 Introducing ${product}! Perfect for ${audience}. Boost your business today 🚀`;
 
-    res.json({ result: data.response || "No response generated" });
-
+    res.json({ result });
   } catch (err) {
-    console.error("AD ERROR:", err);
+    console.error(err);
     res.status(500).json({ error: "Ad generation failed" });
   }
 });
 
-
-// ===============================
-// ANALYTICS
-// ===============================
+// ANALYZE
 app.post("/analyze", (req, res) => {
-  const { salesData } = req.body;
+  try {
+    const { salesData } = req.body;
 
-  if (!salesData || salesData.length === 0) {
-    return res.json({ totalSales: 0 });
+    const totalSales = salesData.reduce((sum, item) => sum + item.sales, 0);
+
+    const bestProduct = salesData.reduce((a, b) =>
+      a.sales > b.sales ? a : b
+    ).name;
+
+    const worstProduct = salesData.reduce((a, b) =>
+      a.sales < b.sales ? a : b
+    ).name;
+
+    res.json({ totalSales, bestProduct, worstProduct });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Analysis failed" });
   }
+});
 
-  const totalSales = salesData.reduce((sum, item) => sum + item.sales, 0);
-
-  const sorted = [...salesData].sort((a, b) => b.sales - a.sales);
-
+// INSIGHTS
+app.post("/insights", (req, res) => {
   res.json({
-    totalSales,
-    bestProduct: sorted[0].name,
-    worstProduct: sorted[sorted.length - 1].name,
+    insights:
+      "Focus on best-selling products and improve low-performing ones.",
   });
 });
 
-
-// ===============================
-// INSIGHTS
-// ===============================
-app.post("/insights", async (req, res) => {
-  const { salesData } = req.body;
-
+// CHAT (NO OLLAMA)
+app.post("/chat", (req, res) => {
   try {
-    const summary = salesData.map(s => `${s.name}:${s.sales}`).join(",");
+    const { message } = req.body;
 
-    const response = await fetch("http://localhost:11434/api/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "llama3",
-        prompt: `Give short business insights based on: ${summary}`,
-        stream: false,
-      }),
+    res.json({
+      reply: `💡 Business Tip: Improve marketing, pricing, and customer experience.\n\nYou said: "${message}"`,
     });
-
-    const data = await response.json();
-
-    res.json({ insights: data.response || "No insights generated" });
-
   } catch (err) {
-    console.error("INSIGHTS ERROR:", err);
-    res.status(500).json({ error: "Insights failed" });
-  }
-});
-
-
-// ===============================
-// CHATBOT (FIXED)
-// ===============================
-app.post("/chat", async (req, res) => {
-  const { message } = req.body;
-
-  try {
-    const response = await fetch("http://localhost:11434/api/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "llama3",
-        prompt: `You are a business expert. Answer clearly:\n\n${message}`,
-        stream: false,
-      }),
-    });
-
-    const data = await response.json();
-
-    console.log("CHAT:", data);
-
-    res.json({ reply: data.response || "No reply from AI" });
-
-  } catch (err) {
-    console.error("CHAT ERROR:", err);
     res.status(500).json({ error: "Chat failed" });
   }
 });
 
+// PORT FIX
+const PORT = process.env.PORT || 5000;
 
-// ===============================
-app.listen(5000, () => {
-  console.log("Server running on http://localhost:5000");
+app.listen(PORT, () => {
+  console.log("Server running on port", PORT);
 });
