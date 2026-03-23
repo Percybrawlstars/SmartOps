@@ -4,19 +4,25 @@ import fetch from "node-fetch";
 
 const app = express();
 
-// ✅ CORS (FIXED)
+// ✅ CORS (FULL FIX)
 app.use(cors({
   origin: "*",
-  methods: ["GET", "POST"],
-  allowedHeaders: ["Content-Type"]
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
+// ✅ HANDLE PREFLIGHT REQUESTS
+app.options("*", cors());
+
+// ✅ BODY PARSER
 app.use(express.json());
+
 
 // ✅ ROOT ROUTE
 app.get("/", (req, res) => {
   res.send("Backend is running 🚀");
 });
+
 
 // ✅ AD GENERATOR
 app.post("/generate-ad", (req, res) => {
@@ -36,6 +42,7 @@ app.post("/generate-ad", (req, res) => {
     res.status(500).json({ error: "Ad generation failed" });
   }
 });
+
 
 // ✅ SALES ANALYSIS
 app.post("/analyze", (req, res) => {
@@ -64,6 +71,7 @@ app.post("/analyze", (req, res) => {
   }
 });
 
+
 // ✅ INSIGHTS
 app.post("/insights", (req, res) => {
   try {
@@ -76,6 +84,7 @@ app.post("/insights", (req, res) => {
     res.status(500).json({ error: "Insights failed" });
   }
 });
+
 
 // ✅ GROQ AI CHATBOT
 app.post("/chat", async (req, res) => {
@@ -123,6 +132,7 @@ app.post("/chat", async (req, res) => {
     res.status(500).json({ error: "Chat failed" });
   }
 });
+
 
 // ✅ PORT (CRITICAL FOR RAILWAY)
 const PORT = process.env.PORT || 5000;
