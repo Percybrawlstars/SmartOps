@@ -1,18 +1,14 @@
 import express from "express";
 import cors from "cors";
-import fetch from "node-fetch";
 
 const app = express();
 
-/* =========================
-   ✅ FORCE CORS (FINAL FIX)
-========================= */
+/* ✅ FORCE CORS */
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
 
-  // handle preflight
   if (req.method === "OPTIONS") {
     return res.sendStatus(200);
   }
@@ -20,51 +16,32 @@ app.use((req, res, next) => {
   next();
 });
 
-// optional but fine
-app.use(cors());
-
 app.use(express.json());
 
-/* =========================
-   ✅ ROOT
-========================= */
+/* ✅ ROOT */
 app.get("/", (req, res) => {
   res.send("Backend is running 🚀");
 });
 
-/* =========================
-   ✅ AD GENERATOR
-========================= */
+/* ✅ AD GENERATOR */
 app.post("/generate-ad", (req, res) => {
   try {
     const { product, audience } = req.body;
 
-    if (!product || !audience) {
-      return res.status(400).json({ error: "Missing product or audience" });
-    }
-
-    const result = `🔥 Introducing ${product}!\nPerfect for ${audience}.\nBoost your business today 🚀`;
+    const result = `🔥 Introducing ${product}! Perfect for ${audience}.`;
 
     res.json({ result });
-
-  } catch (err) {
-    console.error("AD ERROR:", err);
-    res.status(500).json({ error: "Ad generation failed" });
+  } catch {
+    res.status(500).json({ error: "Ad failed" });
   }
 });
 
-/* =========================
-   ✅ SALES ANALYSIS
-========================= */
+/* ✅ ANALYZE */
 app.post("/analyze", (req, res) => {
   try {
     const { salesData } = req.body;
 
-    if (!salesData || salesData.length === 0) {
-      return res.status(400).json({ error: "No sales data provided" });
-    }
-
-    const totalSales = salesData.reduce((sum, item) => sum + item.sales, 0);
+    const totalSales = salesData.reduce((s, i) => s + i.sales, 0);
 
     const bestProduct = salesData.reduce((a, b) =>
       a.sales > b.sales ? a : b
@@ -75,80 +52,51 @@ app.post("/analyze", (req, res) => {
     ).name;
 
     res.json({ totalSales, bestProduct, worstProduct });
-
-  } catch (err) {
-    console.error("ANALYSIS ERROR:", err);
-    res.status(500).json({ error: "Analysis failed" });
+  } catch {
+    res.status(500).json({ error: "Analyze failed" });
   }
 });
 
-/* =========================
-   ✅ INSIGHTS
-========================= */
+/* ✅ INSIGHTS */
 app.post("/insights", (req, res) => {
-  try {
-    res.json({
-      insights:
-        "Focus on top-performing products and improve weaker ones using better marketing strategies."
-    });
-  } catch (err) {
-    console.error("INSIGHTS ERROR:", err);
-    res.status(500).json({ error: "Insights failed" });
-  }
+  res.json({
+    insights: "Focus on best products and improve weaker ones."
+  });
 });
 
-/* =========================
-   ✅ GROQ AI CHATBOT
-========================= */
+/* ✅ GROQ AI (SAFE VERSION) */
 app.post("/chat", async (req, res) => {
   try {
     const { message } = req.body;
-
-    if (!message) {
-      return res.status(400).json({ error: "Message is required" });
-    }
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
         model: "llama3-70b-8192",
         messages: [
-          {
-            role: "system",
-            content: "You are a helpful AI business assistant helping small businesses grow."
-          },
-          {
-            role: "user",
-            content: message
-          }
-        ],
-      }),
+          { role: "system", content: "You help small businesses grow." },
+          { role: "user", content: message }
+        ]
+      })
     });
 
     const data = await response.json();
 
-    if (!data.choices) {
-      console.error("GROQ ERROR:", data);
-      return res.status(500).json({ error: "AI failed" });
-    }
-
-    const reply = data.choices[0].message.content;
-
-    res.json({ reply });
+    res.json({
+      reply: data?.choices?.[0]?.message?.content || "AI error"
+    });
 
   } catch (err) {
-    console.error("CHAT ERROR:", err);
+    console.error(err);
     res.status(500).json({ error: "Chat failed" });
   }
 });
 
-/* =========================
-   ✅ PORT (CRITICAL)
-========================= */
+/* ✅ PORT */
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
