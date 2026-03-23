@@ -4,12 +4,23 @@ import fetch from "node-fetch";
 
 const app = express();
 
-// ✅ CORS (FULL FIX)
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+// ✅ FORCE CORS HEADERS (THIS FIXES EVERYTHING)
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
+
+// OPTIONAL (still fine to keep)
+app.use(cors());
+
+app.use(express.json());
 
 // ✅ HANDLE PREFLIGHT REQUESTS
 app.options("*", cors());
