@@ -22,7 +22,7 @@ export default function App() {
 
   // AD GENERATOR
   const generateAd = async () => {
-    const res = await fetch("http://localhost:5000/generate-ad", {
+    const res = await fetch("smartops-production-a689.up.railway.app/generate-ad", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ product, audience }),
@@ -50,7 +50,7 @@ export default function App() {
 
   // ANALYZE
   const analyzeSales = async () => {
-    const res = await fetch("http://localhost:5000/analyze", {
+    const res = await fetch("smartops-production-a689.up.railway.app/analyze", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ salesData }),
@@ -61,7 +61,7 @@ export default function App() {
 
   // INSIGHTS
   const getInsights = async () => {
-    const res = await fetch("http://localhost:5000/insights", {
+    const res = await fetch("smartops-production-a689.up.railway.app/insights", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ salesData }),
@@ -77,7 +77,7 @@ export default function App() {
     const newMsgs = [...messages, { role: "user", text: input }];
     setMessages(newMsgs);
 
-    const res = await fetch("http://localhost:5000/chat", {
+    const res = await fetch("smartops-production-a689.up.railway.app/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: input }),
