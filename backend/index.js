@@ -1,3 +1,4 @@
+console.log("STARTING SERVER...");
 import express from "express";
 import cors from "cors";
 
